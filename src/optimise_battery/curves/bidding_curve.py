@@ -1,26 +1,30 @@
 import numpy as np
 import numpy.typing as npt
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class BiddingCurve:
     """Describes the curve of service of the battery in the market
     """
-    max_power: float
     affine_points_x: list[float]
     affine_points_y: list[float]
+    max_power: float
     min_power: float = 0.0
     base_freq: float = 50.0
     resolution_curve: int = 1000
+
+    def __post_init__(self):
+        self.affine_points_y = [x * self.max_power for x in self.affine_points_y]
 
     def create_curve(self) -> npt.NDArray:
         """Creates discrete function of x, y pairs following the required market curve
 
         Returns
         -------
-        list : list with x, y pairs
+        curve_pairs : list
+            list with x, y pairs making the curve
         """
         curve_pairs = []
         for i in range(len(self.affine_points_x) - 1):

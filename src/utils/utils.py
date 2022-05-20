@@ -2,22 +2,56 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+import yaml
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
-def read_csv_file(fname: str, cols: list) -> pd.Series:
+
+def read_config(inputs_path: str) -> dict:
+    """Reads YML file with inputs
+
+    Parameters
+    ----------
+    inputs_path : str
+        Path to the inputs file.
+
+    Returns
+    -------
+    data : dict
+        Dictionary with the read data.
+    """
+    with open(inputs_path) as infile:
+        data = yaml.load(infile, Loader=Loader)
+    return data
+
+
+def read_csv_file(fname: str, cols: list, date_start: str, date_end: str) -> pd.Series:
     """Reads csv file returning an array
 
     Parameters
     ----------
+
     fname : str
         path to csv file to read
+    cols : list[str]
+        list of columns to read
+    date_start : str
+        date start for the time series
+    date_end : str
+        date end for the time series
 
     Returns
     -------
-    pd.Series
+    series : pd.Series
+        time series with required information
     """
+    floored_date_end = str(pd.Timestamp(date_end).floor('30T'))
+    index_seconds = pd.date_range(start=date_start, end=date_end, freq='S')
+    index_half_hours = pd.date_range(start=date_start, end=floored_date_end, freq='30T')
+
     df = pd.read_csv(fname, header=0, index_col=0).ffill()
-    index_seconds = pd.date_range(start='2022-04-01 00:00:00', end='2022-04-30 23:59:59', freq='S')
-    index_half_hours = pd.date_range(start='2022-04-01 00:00:00', end='2022-04-30 23:30:00', freq='30T')
     values = df[cols].values.reshape(-1)
     if len(values) == len(index_seconds):
         series = pd.Series(index=index_seconds, data=values)
@@ -48,23 +82,3 @@ def find_nearest(array: npt.NDArray, value: float) -> int:
     idx = (np.abs(array - value)).argmin()
 
     return idx
-
-
-def pivot_dataframe(df: pd.DataFrame, idx: str, cols: list[str]) -> pd.Series:
-    """Pivots a dataframe to extract an indexed Series
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        dataframe to pivot
-    idx : index
-        index column
-    cols : list
-        columns to keep
-
-    Returns
-    -------
-    series : pd.Series
-        indexed series
-    """
-    return df.pivot(index=idx, columns=cols)

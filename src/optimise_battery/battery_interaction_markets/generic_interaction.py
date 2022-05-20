@@ -3,31 +3,53 @@ import pandas as pd
 
 from abc import ABC, abstractmethod
 
+from optimise_battery.curves import BiddingCurve
 from utils import find_nearest
 
 
 class GenericInteraction(ABC):
     """Market interface.
     """
-    def __init__(self, freq_data: pd.Series, ssp: pd.Series, capacity: float = 8.0, soc_bounds: tuple = (0.25, 0.75)
-                 ) -> None:
+    def __init__(
+            self,
+            freq_data: pd.Series,
+            ssp: pd.Series,
+            market_name: str,
+            ref_price: float,
+            bidding_curve: BiddingCurve
+    ) -> None:
+
         self.freq_data = freq_data
         self.ssp = ssp
-        self.capacity = capacity
-        self.soc_bounds = tuple(x * capacity for x in soc_bounds)
+        self.market_name = market_name
+        self.reference_price = ref_price
+        self.bidding_curve = bidding_curve
+
+    def __repr__(self):
+        return f'{self.market_name}'
 
     @abstractmethod
-    def activate(self) -> None:
+    def activate(self, price_market: float = None) -> float:
         """Performs the balancing activation of the battery in the market
 
+        Parameters
+        ----------
+        price_market : float
+            reference price of the market to modify the starting one
         Returns
         -------
-        None
+        profit : float
+            total profit after interacting in this market
         """
         raise NotImplementedError
 
+    def _create_bidding_curve(self) -> npt.NDArray[tuple[float, float]]:
+        """Creates bidding curve of the battery for this market
+        """
+        return self.bidding_curve.create_curve()
+
     def _get_freq_activation(self, service_curve: npt.NDArray[tuple[float, float]]) -> pd.Series:
-        """Matches a given frequency with the possible activation.
+        """Matches a given frequency with the possible activation
 
         Parameters
         ----------
@@ -36,7 +58,7 @@ class GenericInteraction(ABC):
         Returns
         -------
         activations : pd.Series
-            Series with the possible activations.
+            Series with the possible activations
         """
         activations = pd.Series(index=self.freq_data.index, dtype=float)
         for t in self.freq_data.index:

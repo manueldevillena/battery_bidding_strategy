@@ -1,0 +1,36 @@
+freq_data: '../data/example_short/April_frequency.csv'
+freq_column: 'localFrequency'
+ssp_data: '../data/example_short/Data.csv'
+ssp_column: 'SSP [GBP/MWh]'
+start_date: '2022-04-01 00:00:00'
+end_date: '2022-04-01 23:59:59'
+learning_rate: 0.1
+markets:
+  FRR:
+    affine_x: [-0.5, 0.0]
+    affine_y: [1.0, 0.0]
+    max_power: 10.0
+    ref_price: 10.0
+    capacity: 8.0
+    benchmark: true
+  DM:
+    affine_x: [-0.5, -0.2, -0.1, 0.0]
+    affine_y: [1.0, 1.0, 0.05, 0.0]
+    max_power: 10.0
+    ref_price: 10.0
+    capacity: 8.0
+    benchmark: false
+  DC:
+    affine_x: [-0.5, -0.2, 0.0]
+    affine_y: [1.0, 0.05, 0.0]
+    max_power: 10.0
+    ref_price: 10.0
+    capacity: 8.0
+    benchmark: false
+  DR:
+    affine_x: [-0.5, -0.1, 0.0]
+    affine_y: [1.0, 1.0, 0.0]
+    max_power: 7.0
+    ref_price: 10.0
+    capacity: 8.0
+    benchmark: false
