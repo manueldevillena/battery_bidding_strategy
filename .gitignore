@@ -3,3 +3,4 @@ python_test_may_2022.ipynb
 .idea/
 .ipynb_checkpoints/
 .venv/
+/__pycache__
