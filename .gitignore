@@ -1,6 +1,5 @@
-python_test_may_2022.ipynb
 .DS_Store
 .idea/
 .ipynb_checkpoints/
 .venv/
-/__pycache__
+__pycache__/
